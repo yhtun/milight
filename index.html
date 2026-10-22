@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>追光氛围灯带</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mainOrange: '#ff6724',
+                        slideYellow: '#ffc120',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body{
+            background: linear-gradient(180deg, #ffd488 0%, #ffc266 100%);
+            min-height:100vh;
+        }
+        /* 亮度滑动条，对齐米家样式 */
+        input[type="range"].bright-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 44px;
+            border-radius: 999px;
+            background: #fff;
+            position: relative;
+        }
+        input[type="range"].bright-slider::-webkit-slider-runnable-track {
+            height:44px;
+            border-radius:999px;
+            background: linear-gradient(90deg, #ffc120 var(--percent,100%), #ffffff var(--percent,100%));
+        }
+        input[type="range"].bright-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width:32px;
+            height:32px;
+            border-radius:99px;
+            background:#fff;
+            box-shadow:0 2px 8px rgba(0,0,0,0.18);
+            cursor:pointer;
+            margin-top:6px;
+        }
+        /* RGB、速度滑块基础样式 */
+        input[type="range"].normal-slider {
+            -webkit-appearance: none;
+            height:12px;
+            border-radius:999px;
+            background:#eee;
+        }
+        input[type="range"].normal-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width:22px;
+            height:22px;
+            border-radius:99px;
+            background:#ff6724;
+            box-shadow:0 2px 6px #0002;
+            cursor:pointer;
+        }
+        .mode-item.active .mode-circle{
+            background-color: #ff6724 !important;
+            color:#fff !important;
+            box-shadow: 0 0 0 3px #ffddcc;
+        }
+        /* 关灯禁用样式 */
+        .card-disabled {
+            opacity: 0.45;
+            pointer-events: none;
+            filter: grayscale(0.7);
+        }
+    </style>
+</head>
+<body class="p-4 font-sans">
+    <div class="max-w-md mx-auto space-y-4 pb-8">
+        <h1 class="text-xl font-bold text-center text-orange-900 mt-2">追光氛围灯带</h1>
+
+        <!-- 开关卡片，完全参考截图样式 -->
+        <div id="powerCard" class="bg-white rounded-2xl p-5 shadow-sm flex items-center gap-4 cursor-pointer">
+            <div class="w-14 h-14 rounded-full bg-mainOrange flex items-center justify-center text-white text-2xl">
+                <i class="fa fa-power-off"></i>
+            </div>
+            <span id="powerText" class="text-xl font-medium text-gray-800">关灯</span>
+        </div>
+
+        <!-- 亮度调节 -->
+        <div id="cardBright" class="bg-white rounded-2xl p-5 shadow-sm">
+            <div class="text-gray-700 font-medium mb-4">亮度调节 <span id="brightText">亮度100%</span></div>
+            <div class="relative">
+                <input type="range" id="bright" min="0" max="100" value="100" class="bright-slider" style="--percent:100%">
+                <div class="absolute left-6 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none">
+                    <i class="fa fa-lightbulb-o"></i>
+                </div>
+                <div class="absolute right-6 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none">
+                    <i class="fa fa-lightbulb-o"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 颜色调节【圆形调色盘版本】 -->
+        <div id="cardColor" class="bg-white rounded-2xl p-5 shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-gray-700 font-medium">颜色调节</span>
+                <div class="flex items-center gap-2">
+                    <span id="rgbText" class="text-sm text-gray-500">RGB 255,200,100</span>
+                    <div id="colorBox" class="w-8 h-8 rounded-md border border-gray-200"></div>
+                </div>
+            </div>
+
+            <div class="flex justify-center mb-4">
+                <div id="colorWheel" class="relative w-64 h-64 rounded-full cursor-pointer select-none"
+                     style="background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);">
+                    <div id="colorPointer" class="absolute w-6 h-6 rounded-full border-4 border-white shadow-lg pointer-events-none"
+                         style="left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-red-500 w-6">R</span>
+                    <input type="range" id="r" min="0" max="255" value="255" class="normal-slider flex-1">
+                    <span id="rVal" class="w-8 text-sm">255</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-green-500 w-6">G</span>
+                    <input type="range" id="g" min="0" max="255" value="200" class="normal-slider flex-1">
+                    <span id="gVal" class="w-8 text-sm">200</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-blue-500 w-6">B</span>
+                    <input type="range" id="b" min="0" max="255" value="100" class="normal-slider flex-1">
+                    <span id="bVal" class="w-8 text-sm">100</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 速度调节 -->
+        <div id="cardSpeed" class="bg-white rounded-2xl p-5 shadow-sm">
+            <div class="text-gray-700 font-medium mb-3">动画速度 <span id="speedText">速度5</span></div>
+            <input type="range" id="speed" min="1" max="10" value="5" class="normal-slider w-full">
+        </div>
+
+        <!-- 情景模式 -->
+        <div id="cardMode" class="bg-white rounded-2xl p-5 shadow-sm">
+            <div class="text-gray-700 font-medium mb-4">情景模式</div>
+            <div class="grid grid-cols-4 gap-4 text-center">
+                <div class="mode-item active cursor-pointer" data-val="0">
+                    <div class="mode-circle w-14 h-14 mx-auto rounded-full bg-orange-100 flex items-center justify-center text-mainOrange text-xl">
+                        <i class="fa fa-heart"></i>
+                    </div>
+                    <div class="text-xs mt-2 text-gray-600">静态纯色</div>
+                </div>
+                <div class="mode-item cursor-pointer" data-val="1">
+                    <div class="mode-circle w-14 h-14 mx-auto rounded-full bg-orange-100 flex items-center justify-center text-mainOrange text-xl">
+                        <i class="fa fa-fire"></i>
+                    </div>
+                    <div class="text-xs mt-2 text-gray-600">单色呼吸</div>
+                </div>
+                <div class="mode-item cursor-pointer" data-val="2">
+                    <div class="mode-circle w-14 h-14 mx-auto rounded-full bg-orange-100 flex items-center justify-center text-mainOrange text-xl">
+                        <i class="fa fa-paint-brush"></i>
+                    </div>
+                    <div class="text-xs mt-2 text-gray-600">彩虹平移</div>
+                </div>
+                <div class="mode-item cursor-pointer" data-val="3">
+                    <div class="mode-circle w-14 h-14 mx-auto rounded-full bg-orange-100 flex items-center justify-center text-mainOrange text-xl">
+                        <i class="fa fa-refresh"></i>
+                    </div>
+                    <div class="text-xs mt-2 text-gray-600">彩虹渐变流水</div>
+                </div>
+            </div>
+        </div>
+        <div id="tip" class="text-center text-sm h-6"></div>
+    </div>
+
+    <script>
+        const uid = "b3af4057eb93790223cb16bd970a6f75";
+        const ctrlTopic = "milight002";
+        const sendBaseUrl = "https://apis.bemfa.com/va/sendMessage?type=3&uid=";
+        const getUrl = `https://apis.bemfa.com/va/getmsg?uid=${uid}&topic=${ctrlTopic}&type=3`;
+
+        const powerCard = document.getElementById("powerCard");
+        const powerText = document.getElementById("powerText");
+        const speedEl = document.getElementById("speed");
+        const tipEl = document.getElementById("tip");
+
+        const brightEl = document.getElementById("bright");
+        const brightText = document.getElementById("brightText");
+        const speedText = document.getElementById("speedText");
+
+        // 卡片DOM
+        const cardBright = document.getElementById("cardBright");
+        const cardColor = document.getElementById("cardColor");
+        const cardSpeed = document.getElementById("cardSpeed");
+        const cardMode = document.getElementById("cardMode");
+
+        // 调色盘相关DOM
+        const rEl = document.getElementById("r");
+        const gEl = document.getElementById("g");
+        const bEl = document.getElementById("b");
+        const rVal = document.getElementById("rVal");
+        const gVal = document.getElementById("gVal");
+        const bVal = document.getElementById("bVal");
+        const colorBox = document.getElementById("colorBox");
+        const rgbText = document.getElementById("rgbText");
+        const colorWheel = document.getElementById("colorWheel");
+        const colorPointer = document.getElementById("colorPointer");
+
+        let syncLock = false;
+        let lastMsg = "";
+        let selectedMode = 0;
+        let powerState = 0;
+
+        let pointerDragging = false;
+        let rgbDragging = false;
+
+        // 防抖：松开滑块才发送
+        let sendTimer = null;
+        function queueSend(){
+            clearTimeout(sendTimer);
+            sendTimer = setTimeout(sendAllParam, 220);
+        }
+
+        async function sendAllParam(){
+            tipEl.textContent = "";
+            const power = powerState;
+            const r = Number(rEl.value);
+            const g = Number(gEl.value);
+            const b = Number(bEl.value);
+            const bright = Number(brightEl.value);
+            const speed = Number(speedEl.value);
+            const mode = selectedMode;
+            const payload = JSON.stringify({power, r, g, b, bright, mode, speed});
+            const url = `${sendBaseUrl}${uid}&topic=${ctrlTopic}&msg=${encodeURIComponent(payload)}`;
+            try {
+                await fetch(url);
+            }catch(e){
+                tipEl.textContent = "网络发送失败";
+                tipEl.className = "text-center text-sm h-6 text-red-600";
+            }
+        }
+
+        function updatePreview(){
+            const r = Number(rEl.value);
+            const g = Number(gEl.value);
+            const b = Number(bEl.value);
+            colorBox.style.backgroundColor = `rgb(${r},${g},${b})`;
+            rVal.innerText = r;
+            gVal.innerText = g;
+            bVal.innerText = b;
+            rgbText.innerText = `RGB ${r},${g},${b}`;
+
+            const bv = brightEl.value;
+            brightText.innerText = `亮度${bv}%`;
+            brightEl.style.setProperty('--percent', bv + '%');
+            speedText.innerText = `速度${speedEl.value}`;
+
+            if(!rgbDragging){
+                updatePointerFromRgb(r, g, b);
+            }
+        }
+
+        function updatePointerFromRgb(r, g, b){
+            const [h, s, l] = rgbToHsl(r, g, b);
+            const angle = h * 360;
+            const radius = Math.min(colorWheel.offsetWidth, colorWheel.offsetHeight) / 2 - 12;
+            const rad = (angle - 90) * Math.PI / 180;
+            const x = Math.cos(rad) * radius * s;
+            const y = Math.sin(rad) * radius * s;
+            colorPointer.style.left = `calc(50% + ${x}px)`;
+            colorPointer.style.top = `calc(50% + ${y}px)`;
+        }
+
+        function rgbToHsl(r, g, b){
+            r /= 255; g /= 255; b /= 255;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            if(max === min){
+                h = s = 0;
+            }else{
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch(max){
+                    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                    case g: h = ((b - r) / d + 2) / 6; break;
+                    case b: h = ((r - g) / d + 4) / 6; break;
+                }
+            }
+            return [h, s, l];
+        }
+
+        function hslToRgb(h, s, l){
+            let r, g, b;
+            if(s === 0){
+                r = g = b = l;
+            }else{
+                const hue2rgb = (p, q, t) => {
+                    if(t < 0) t += 1;
+                    if(t > 1) t -= 1;
+                    if(t < 1/6) return p + (q - p) * 6 * t;
+                    if(t < 1/2) return q;
+                    if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        function setRgbFromPointer(clientX, clientY){
+            const rect = colorWheel.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const dx = clientX - cx;
+            const dy = clientY - cy;
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+            const radius = Math.min(rect.width, rect.height) / 2;
+            const dist = Math.min(Math.hypot(dx, dy), radius - 12);
+            const s = Math.max(0, Math.min(1, dist / (radius - 12)));
+            const h = ((angle % 360) + 360) % 360 / 360;
+            const l = 0.5;
+
+            const [r, g, b] = hslToRgb(h, s, l);
+            rEl.value = r;
+            gEl.value = g;
+            bEl.value = b;
+            updatePreview();
+            queueSend();
+        }
+
+        colorWheel.addEventListener("pointerdown", (e)=>{
+            pointerDragging = true;
+            colorPointer.style.transition = "none";
+            colorWheel.setPointerCapture(e.pointerId);
+            setRgbFromPointer(e.clientX, e.clientY);
+        });
+        colorWheel.addEventListener("pointermove", (e)=>{
+            if(!pointerDragging) return;
+            setRgbFromPointer(e.clientX, e.clientY);
+        });
+        colorWheel.addEventListener("pointerup", ()=>{ pointerDragging = false; });
+        colorWheel.addEventListener("pointercancel", ()=>{ pointerDragging = false; });
+
+        [rEl, gEl, bEl, brightEl, speedEl].forEach(el=>{
+            el.addEventListener("input", ()=>{
+                rgbDragging = true;
+                updatePreview();
+            });
+            el.addEventListener("change", ()=>{
+                rgbDragging = false;
+                queueSend();
+            });
+        });
+
+        // 开关点击
+        powerCard.onclick = async ()=>{
+            powerState = powerState ? 0 : 1;
+            updatePowerUI();
+            const msg = powerState ? "on" : "off";
+            const url = `${sendBaseUrl}${uid}&topic=${ctrlTopic}&msg=${encodeURIComponent(msg)}`;
+            try { await fetch(url); }catch(e){}
+        }
+        function updatePowerUI(){
+            if(powerState === 1){
+                powerText.innerText = "开灯";
+                powerCard.querySelector("div").classList.remove("bg-mainOrange");
+                powerCard.querySelector("div").classList.add("bg-green-500");
+                // 开灯：移除禁用
+                cardBright.classList.remove("card-disabled");
+                cardColor.classList.remove("card-disabled");
+                cardSpeed.classList.remove("card-disabled");
+                cardMode.classList.remove("card-disabled");
+            }else{
+                powerText.innerText = "关灯";
+                powerCard.querySelector("div").classList.remove("bg-green-500");
+                powerCard.querySelector("div").classList.add("bg-mainOrange");
+                // 关灯：置灰+禁止点击
+                cardBright.classList.add("card-disabled");
+                cardColor.classList.add("card-disabled");
+                cardSpeed.classList.add("card-disabled");
+                cardMode.classList.add("card-disabled");
+            }
+        }
+
+        // 情景模式点击
+        document.querySelectorAll(".mode-item").forEach(item=>{
+            item.onclick = ()=>{
+                document.querySelectorAll(".mode-item").forEach(i=>i.classList.remove("active"));
+                item.classList.add("active");
+                selectedMode = Number(item.dataset.val);
+                queueSend();
+            }
+        })
+
+        function parseMijiaMsg(raw){
+            raw = raw.trim();
+            if(raw === "off") return {power:0};
+            const parts = raw.split("#");
+            if(parts[0] === "on"){
+                const res = {power:1};
+                if(parts.length >=2) res.bright = parseInt(parts[1]);
+                if(parts.length >=3){
+                    const rgbNum = parseInt(parts[2]);
+                    res.r = (rgbNum >> 16) & 0xFF;
+                    res.g = (rgbNum >> 8) & 0xFF;
+                    res.b = rgbNum & 0xFF;
+                }
+                return res;
+            }
+            return null;
+        }
+
+        async function syncStatus(){
+            if(syncLock) return;
+            try{
+                const res = await fetch(getUrl);
+                const data = await res.json();
+                if(data.code === 0 && data.data && data.data.length>0){
+                    const recvMsg = data.data[0].msg;
+                    if(recvMsg === lastMsg) return;
+                    lastMsg = recvMsg;
+                    let st;
+                    if(recvMsg.startsWith("{")) st = JSON.parse(recvMsg);
+                    else st = parseMijiaMsg(recvMsg);
+                    if(!st) return;
+                    syncLock = true;
+                    if(st.power!==undefined){
+                        powerState = st.power;
+                        updatePowerUI();
+                    }
+                    if(st.bright!==undefined) brightEl.value = st.bright;
+                    if(st.r!==undefined) rEl.value = st.r;
+                    if(st.g!==undefined) gEl.value = st.g;
+                    if(st.b!==undefined) bEl.value = st.b;
+                    if(st.mode!==undefined){
+                        selectedMode = st.mode;
+                        document.querySelectorAll(".mode-item").forEach(it=>{
+                            it.classList.remove("active");
+                            if(Number(it.dataset.val) === selectedMode){
+                                it.classList.add("active");
+                            }
+                        })
+                    }
+                    if(st.speed!==undefined) speedEl.value = st.speed;
+                    updatePreview();
+                    syncLock = false;
+                }
+            }catch(e){
+                syncLock = false;
+            }
+        }
+        setInterval(syncStatus, 2000);
+        syncStatus();
+        updatePreview();
+    </script>
+</body>
+</html>
+<!-- （注：内容由AI生成） -->
