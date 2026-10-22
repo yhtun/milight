@@ -23,7 +23,6 @@
             background: linear-gradient(180deg, #ffd488 0%, #ffc266 100%);
             min-height:100vh;
         }
-        /* 亮度滑动条，对齐米家样式 */
         input[type="range"].bright-slider {
             -webkit-appearance: none;
             width: 100%;
@@ -47,7 +46,6 @@
             cursor:pointer;
             margin-top:6px;
         }
-        /* RGB、速度滑块基础样式 */
         input[type="range"].normal-slider {
             -webkit-appearance: none;
             height:12px;
@@ -68,7 +66,6 @@
             color:#fff !important;
             box-shadow: 0 0 0 3px #ffddcc;
         }
-        /* 关灯禁用样式 */
         .card-disabled {
             opacity: 0.45;
             pointer-events: none;
@@ -80,7 +77,6 @@
     <div class="max-w-md mx-auto space-y-4 pb-8">
         <h1 class="text-xl font-bold text-center text-orange-900 mt-2">追光氛围灯带</h1>
 
-        <!-- 开关卡片，完全参考截图样式 -->
         <div id="powerCard" class="bg-white rounded-2xl p-5 shadow-sm flex items-center gap-4 cursor-pointer">
             <div class="w-14 h-14 rounded-full bg-mainOrange flex items-center justify-center text-white text-2xl">
                 <i class="fa fa-power-off"></i>
@@ -88,7 +84,6 @@
             <span id="powerText" class="text-xl font-medium text-gray-800">关灯</span>
         </div>
 
-        <!-- 亮度调节 -->
         <div id="cardBright" class="bg-white rounded-2xl p-5 shadow-sm">
             <div class="text-gray-700 font-medium mb-4">亮度调节 <span id="brightText">亮度100%</span></div>
             <div class="relative">
@@ -102,7 +97,6 @@
             </div>
         </div>
 
-        <!-- 颜色调节【圆形调色盘版本】 -->
         <div id="cardColor" class="bg-white rounded-2xl p-5 shadow-sm">
             <div class="flex justify-between items-center mb-4">
                 <span class="text-gray-700 font-medium">颜色调节</span>
@@ -139,13 +133,11 @@
             </div>
         </div>
 
-        <!-- 速度调节 -->
         <div id="cardSpeed" class="bg-white rounded-2xl p-5 shadow-sm">
             <div class="text-gray-700 font-medium mb-3">动画速度 <span id="speedText">速度5</span></div>
             <input type="range" id="speed" min="1" max="10" value="5" class="normal-slider w-full">
         </div>
 
-        <!-- 情景模式 -->
         <div id="cardMode" class="bg-white rounded-2xl p-5 shadow-sm">
             <div class="text-gray-700 font-medium mb-4">情景模式</div>
             <div class="grid grid-cols-4 gap-4 text-center">
@@ -163,15 +155,15 @@
                 </div>
                 <div class="mode-item cursor-pointer" data-val="2">
                     <div class="mode-circle w-14 h-14 mx-auto rounded-full bg-orange-100 flex items-center justify-center text-mainOrange text-xl">
-                        <i class="fa fa-paint-brush"></i>
+                        <i class="fa fa-sun-o"></i>
                     </div>
-                    <div class="text-xs mt-2 text-gray-600">彩虹平移</div>
+                    <div class="text-xs mt-2 text-gray-600">多色呼吸渐变</div>
                 </div>
                 <div class="mode-item cursor-pointer" data-val="3">
                     <div class="mode-circle w-14 h-14 mx-auto rounded-full bg-orange-100 flex items-center justify-center text-mainOrange text-xl">
                         <i class="fa fa-refresh"></i>
                     </div>
-                    <div class="text-xs mt-2 text-gray-600">彩虹渐变流水</div>
+                    <div class="text-xs mt-2 text-gray-600">彩虹流水</div>
                 </div>
             </div>
         </div>
@@ -193,13 +185,11 @@
         const brightText = document.getElementById("brightText");
         const speedText = document.getElementById("speedText");
 
-        // 卡片DOM
         const cardBright = document.getElementById("cardBright");
         const cardColor = document.getElementById("cardColor");
         const cardSpeed = document.getElementById("cardSpeed");
         const cardMode = document.getElementById("cardMode");
 
-        // 调色盘相关DOM
         const rEl = document.getElementById("r");
         const gEl = document.getElementById("g");
         const bEl = document.getElementById("b");
@@ -219,7 +209,6 @@
         let pointerDragging = false;
         let rgbDragging = false;
 
-        // 防抖：松开滑块才发送
         let sendTimer = null;
         function queueSend(){
             clearTimeout(sendTimer);
@@ -361,7 +350,6 @@
             });
         });
 
-        // 开关点击
         powerCard.onclick = async ()=>{
             powerState = powerState ? 0 : 1;
             updatePowerUI();
@@ -374,7 +362,6 @@
                 powerText.innerText = "开灯";
                 powerCard.querySelector("div").classList.remove("bg-mainOrange");
                 powerCard.querySelector("div").classList.add("bg-green-500");
-                // 开灯：移除禁用
                 cardBright.classList.remove("card-disabled");
                 cardColor.classList.remove("card-disabled");
                 cardSpeed.classList.remove("card-disabled");
@@ -383,7 +370,6 @@
                 powerText.innerText = "关灯";
                 powerCard.querySelector("div").classList.remove("bg-green-500");
                 powerCard.querySelector("div").classList.add("bg-mainOrange");
-                // 关灯：置灰+禁止点击
                 cardBright.classList.add("card-disabled");
                 cardColor.classList.add("card-disabled");
                 cardSpeed.classList.add("card-disabled");
@@ -391,7 +377,6 @@
             }
         }
 
-        // 情景模式点击
         document.querySelectorAll(".mode-item").forEach(item=>{
             item.onclick = ()=>{
                 document.querySelectorAll(".mode-item").forEach(i=>i.classList.remove("active"));
